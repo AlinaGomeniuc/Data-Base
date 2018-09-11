@@ -6,8 +6,8 @@
   - Ability to work with database software
 
 ### Tasks:
-1. Create a database physically placed in **MyDocuments** fixing an increase of the primary database file of 2MB with the 500MB increase limit 
-and the 2MB log with the 100MB increase limit. For secondary files, define a new Default Filegroup, setting the creation of 3MB with the 1000 MB increase limit.
+1. Create a database physically placed in **MyDocuments** fixing an increase of the primary database file of 5MB with the 100MB increase limit 
+and the 20MB log with the 1000MB increase limit. For secondary files, define a new Default Filegroup, setting the creation of 10MB with the 1000 MB increase limit.
 
 2. Create a new database where the log file is physically placed in **MyDocuments\Log**. The name of *log* file, in the 
 operating system environment, should be different from the log file defined in pshysical scheme. The new database should be 
