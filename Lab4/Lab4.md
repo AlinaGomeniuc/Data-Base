@@ -36,15 +36,14 @@ AND   Prenume_Student = 'Ioan'
 Sa se afiseze lista disciplinelor(Disciplina) predate de cel putin doi profesori.
 
 ```SQL
-select Disciplina, COUNT(distinct profesori.Id_Profesor) as Nr_profesori
-from discipline, studenti_reusita,profesori
+select Disciplina, COUNT(distinct studenti_reusita.Id_Profesor) as Nr_profesori
+from discipline, studenti_reusita
 where discipline.Id_Disciplina = studenti_reusita.Id_Disciplina
-and studenti_reusita.Id_Profesor = profesori.Id_Profesor
 group by Disciplina
-having count(distinct profesori.Id_Profesor) > 1
+having count(distinct studenti_reusita.Id_Profesor) > 1
 ```
 
-![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab4/imageLab4/VirtualBox_Alina_17_10_2018_12_31_58.png)
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab4/imageLab4/VirtualBox_Alina_23_10_2018_20_48_38.png)
 
 ### Nr. 38
 Furnizati denumirile disciplinelor cu o medie mai mica decat media notelor de la disciplina Baze de date.
