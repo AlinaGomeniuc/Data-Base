@@ -29,7 +29,7 @@ ON studenti_reusita.Id_Student = studenti.Id_Student
 WHERE Nume_Student = 'Florea' 
 AND   Prenume_Student = 'Ioan'
 ```
-
+from
 ![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab4/imageLab4/VirtualBox_Alina_03_10_2018_18_54_44.png)
 
 ### Nr. 24
@@ -55,9 +55,9 @@ where discipline.Id_Disciplina = studenti_reusita.Id_Disciplina
 group by Disciplina
 having AVG(cast(Nota as float))<(
                   select AVG(cast(Nota as float))
-				          from discipline, studenti_reusita
-				          where Disciplina = 'Baze de date'
-				          group by Disciplina )
+		  discipline, studenti_reusita
+		  where Disciplina = 'Baze de date'
+		  group by Disciplina )
 ```   
 
 ![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab4/imageLab4/VirtualBox_Alina_23_10_2018_19_58_37.png)
