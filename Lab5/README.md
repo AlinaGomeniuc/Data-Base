@@ -26,6 +26,7 @@ print 'Mai mare = ' + cast(@MAI_MARE as varchar(2));
 ## Task 2:
 2.Afisati primele zece date(numele, prenumele studentului) in functie de valoarea notei (cu exceptia notelor 6 si 8) a studentului la primul test al disciplinei Baze de date, folosind structura de altemativa IF. .. ELSE. Sa se foloseasca variabilele
 
+### Method 1
 ```SQL
 declare @Nume_Disciplina varchar(20) = 'Baze de date';
 declare @Tipul_Testului varchar(20) = 'Testul 1';
@@ -56,7 +57,24 @@ and Nota not in (@Nota1, @Nota2)
 
 end
 ```
-from
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab5/images/VirtualBox_Alina_30_10_2018_22_02_20.png)
+
+### Method 2:
+
+``` SQL
+DECLARE @Tip_Evaluare VARCHAR(20) = 'Testul 1';
+DECLARE @Nume_Disciplina VARCHAR(20) = 'Baze de date';
+
+
+SELECT TOP 10 Nume_Student, Prenume_Student
+FROM studenti
+WHERE Id_Student IN (	
+	SELECT IIF(Nota <> 6 AND Nota <> 8, Id_Student, null)
+	 FROM studenti_reusita, discipline  
+	 WHERE studenti_reusita.Id_Disciplina = discipline.Id_Disciplina
+	 AND Tip_Evaluare = @TIP_EVALUARE and Disciplina = @Nume_Disciplina
+)
+```
 ![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab5/images/VirtualBox_Alina_30_10_2018_22_02_20.png)
 
 ## Task 3:
@@ -126,6 +144,8 @@ end catch
 
 ### For ex2:
 
+### Method 1:
+
 ```SQL
 declare @Nume_Disciplina varchar(20) = 'Baze de date';
 declare @Tipul_Testului varchar(20) = 'Testul 1';
@@ -174,3 +194,35 @@ end catch
 ```
 
 ![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab5/images/VirtualBox_Alina_30_10_2018_22_06_23.png)
+
+### Method 2:
+```SQL
+DECLARE @Tip_Evaluare VARCHAR(20) = 'Testul 1' ;
+DECLARE @Nume_Disciplina VARCHAR(20)= 'Baze de date';
+
+begin try
+
+if @Tip_Evaluare = null 
+  raiserror ('Tip_Evaluare is not known',3,3)
+else if @Nume_Disciplina = null
+  raiserror ('Nume_Disciplina is not known',3,3)
+
+else
+SELECT TOP 10 Nume_Student, Prenume_Student 
+FROM studenti
+WHERE Id_Student IN (	
+	SELECT IIF(Nota <> 6 AND Nota <> 8, Id_Student, null)
+	 FROM studenti_reusita, discipline
+	WHERE studenti_reusita.Id_Disciplina = discipline.Id_Disciplina
+	AND Tip_Evaluare = @Tip_Evaluare and Disciplina = @Nume_Disciplina
+)
+end try
+begin catch
+print ' An error occured!' 
+print 'The details of the error'
+print ' The number of error:' + cast(ERROR_NUMBER() as varchar(20))
+print ' Level of Severity:' + cast(ERROR_SEVERITY() as varchar(20))
+print ' The error status:' + cast(ERROR_STATE() as varchar(20))
+print ' The error line:' + cast(ERROR_LINE() as varchar(20))
+end catch
+```
