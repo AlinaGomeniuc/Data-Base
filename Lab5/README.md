@@ -75,7 +75,7 @@ WHERE Id_Student IN (
 	 AND Tip_Evaluare = @TIP_EVALUARE and Disciplina = @Nume_Disciplina
 )
 ```
-![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab5/images/VirtualBox_Alina_30_10_2018_22_02_20.png)
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab5/images/VirtualBox_Alina_30_10_2018_23_11_17.png)
 
 ## Task 3:
 3.Rezolvati aceesi sarcina, 1, apeland la structura selectiva CASE.
@@ -226,3 +226,4 @@ print ' The error status:' + cast(ERROR_STATE() as varchar(20))
 print ' The error line:' + cast(ERROR_LINE() as varchar(20))
 end catch
 ```
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab5/images/VirtualBox_Alina_30_10_2018_23_05_32.png)
