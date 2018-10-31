@@ -36,12 +36,14 @@ declare @Nota2 int = 8;
 if @Nota1 !=any (select  top (10) Nota
 from studenti, studenti_reusita, discipline
 where studenti.Id_Student = studenti_reusita.Id_Student
+and discipline.Id_Disciplina = studenti_reusita.Id_Disciplina
 and Disciplina = @Nume_Disciplina
 and Tip_Evaluare = @Tipul_Testului)
 
 and @Nota2 != any (select  top (10) Nota
 from studenti, studenti_reusita, discipline
 where studenti.Id_Student = studenti_reusita.Id_Student
+and discipline.Id_Disciplina = studenti_reusita.Id_Disciplina
 and Disciplina = @Nume_Disciplina
 and Tip_Evaluare = @Tipul_Testului)
 
