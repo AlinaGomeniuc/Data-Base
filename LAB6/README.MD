@@ -110,78 +110,52 @@ c) Să se insereze toate datele din tabelul profesori în tabelul profesori_new.
 În coloana Localitate să fie inserata doar informatia despre denumirea localității din coloana-sursă Adresa_Postala_Profesor. În coloana Adresa_l, doar denumirea străzii. În coloana Adresa_2, să se păstreze numărul casei și (posibil) a apartamentului.
 
 ```SQL
-CREATE FUNCTION INSTR2(@str VARCHAR(8000), @substr VARCHAR(255), @start INT, @occurrence INT)
-  RETURNS INT
-  AS
-  BEGIN
-	DECLARE @found INT = @occurrence,
-			@pos INT = @start;
- 
-	WHILE 1=1 
-	BEGIN
-		-- Find the next occurrence
-		SET @pos = CHARINDEX(@substr, @str, @pos);
- 
-		-- Nothing found
-		IF @pos IS NULL OR @pos = 0
-			RETURN @pos;
- 
-		-- The required occurrence found
-		IF @found = 1
-			BREAK;
- 
-		-- Prepare to find another one occurrence
-		SET @found = @found - 1;
-		SET @pos = @pos + 1;
-	END
- 
-	RETURN @pos;
-  END
-  GO
-
 CREATE TABLE profesori_new
 (Id_Profesor int NOT NULL
  ,Nume_Profesor char(255)
- ,Prenume_Profesor char(255)
- ,Localitate char (255) DEFAULT('mun. Chisinau')
+ ,[Prenume_Profesor] char(255)
+ ,Localitate char (60) DEFAULT ('mun. Chisinau')
  ,Adresa_1 char (60)
  ,Adresa_2 char (60),
   CONSTRAINT [PK_profesori_new] PRIMARY KEY CLUSTERED 
 (	Id_Profesor )) ON [PRIMARY]
 
-INSERT INTO profesori_new(Id_Profesor, Nume_Profesor, Prenume_Profesor, Localitate, Adresa_1, Adresa_2)
- SELECT Id_Profesor,
-        Nume_Profesor,
-	Prenume_Profesor,
-	CASE 
-		WHEN LEN(Adresa_Postala_Profesor)-LEN(REPLACE(Adresa_Postala_Profesor, ',', ''))=3 
-		THEN  Substring(Adresa_Postala_Profesor,1, dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 2)-1)
-		WHEN LEN(Adresa_Postala_Profesor)-LEN(REPLACE(Adresa_Postala_Profesor, ',', '')) =2 
-		THEN Substring(Adresa_Postala_Profesor,1, charindex(',',Adresa_Postala_Profesor)-1)
-		ELSE Adresa_Postala_Profesor
-		END as  localitate,
-	CASE 
-		WHEN LEN(Adresa_Postala_Profesor)-LEN(REPLACE(Adresa_Postala_Profesor, ',', ''))=3 
-		THEN  Substring(Adresa_Postala_Profesor,dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 2)+1,
-		(dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 3))-(dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 2))-1)
-		WHEN LEN(Adresa_Postala_Profesor)-LEN(REPLACE(Adresa_Postala_Profesor, ',', '')) =2 
-		THEN Substring(Adresa_Postala_Profesor,dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 1)+1,
-		(dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 2))-(dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 1))-1)
-		ELSE NULL
-		END as  Adresa_1,
-	CASE 
-		WHEN LEN(Adresa_Postala_Profesor)-LEN(REPLACE(Adresa_Postala_Profesor, ',', ''))=3 
-		THEN  Substring(Adresa_Postala_Profesor,dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 3)+1, 5)
-		WHEN LEN(Adresa_Postala_Profesor)-LEN(REPLACE(Adresa_Postala_Profesor, ',', '')) =2 
-		THEN Substring(Adresa_Postala_Profesor,dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 2)+1, 5)
-		ELSE NULL
-		END as  Adresa_2
-	FROM profesori;
-		
+INSERT INTO profesori_new (Id_Profesor,Nume_Profesor, Prenume_Profesor, Localitate,Adresa_1, Adresa_2)
+(SELECT Id_Profesor, Nume_Profesor, Prenume_Profesor, Adresa_Postala_Profesor, Adresa_Postala_Profesor, Adresa_Postala_Profesor
+from profesori)
+
+UPDATE profesori_new
+SET Localitate = case when CHARINDEX(', s.',Localitate) >0
+				 then case when CHARINDEX (', str.',Localitate) > 0
+							then SUBSTRING (Localitate,1, CHARINDEX (', str.',Localitate)-1)
+					        when CHARINDEX (', bd.',Localitate) > 0
+							then SUBSTRING (Localitate,1, CHARINDEX (', bd.',Localitate)-1)
+				      end
+				  when  CHARINDEX(', or.',Localitate) >0
+				 then case when CHARINDEX (', str.',Localitate) > 0
+							then SUBSTRING (Localitate,1, CHARINDEX ('str.',Localitate)-3)
+					        when CHARINDEX (', bd.',Localitate) > 0
+							then SUBSTRING (Localitate,1, CHARINDEX ('bd.',Localitate)-3)
+					  end
+				when CHARINDEX('nau',Localitate) >0
+				then SUBSTRING(Localitate, 1, CHARINDEX('nau',Localitate)+2)
+				end
+UPDATE profesori_new
+SET Adresa_1 = case when CHARINDEX('str.', Adresa_1)>0
+					then SUBSTRING(Adresa_1,CHARINDEX('str',Adresa_1)-1, PATINDEX('%, [0-9]%',Adresa_1)- CHARINDEX('str.',Adresa_1))
+			        when CHARINDEX('bd.',Adresa_1)>0
+					then SUBSTRING(Adresa_1,CHARINDEX('bd',Adresa_1)-1, PATINDEX('%, [0-9]%',Adresa_1) -  CHARINDEX('str.',Adresa_1))
+			   end
+
+UPDATE profesori_new
+SET Adresa_2 = case when PATINDEX('%, [0-9]%',Adresa_2)>0
+					then SUBSTRING(Adresa_2, PATINDEX('%, [0-9]%',Adresa_2)+1,len(Adresa_2) - PATINDEX('%, [0-9]%',Adresa_2)+1)
+				end
+				
 select * from profesori_new
 
 ```
-![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_00_15_55.png)
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_19_20_06.png)
 
 ### Task 6
 Să se insereze datele in tabelul orarul pentru Grupa= 'CIBJ 71' (Id_ Grupa= 1) pentru ziua de luni. Toate lectiile vor avea loc în blocul de studii 'B'. Mai jos, sunt prezentate detaliile de inserare:
