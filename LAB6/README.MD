@@ -155,7 +155,7 @@ SET Adresa_2 = case when PATINDEX('%, [0-9]%',Adresa_2)>0
 select * from profesori_new
 
 ```
-![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_19_20_06.png)
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_21_02_01.png)
 
 ### Task 6
 Să se insereze datele in tabelul orarul pentru Grupa= 'CIBJ 71' (Id_ Grupa= 1) pentru ziua de luni. Toate lectiile vor avea loc în blocul de studii 'B'. Mai jos, sunt prezentate detaliile de inserare:
@@ -216,7 +216,103 @@ values ((select Id_Disciplina from discipline where Disciplina = 'Baze de date')
 ### Task 8
 Sa se scrie interogarile de creare a indecsilor asupra tabelelor din baza de date universitatea pentru a asigura o performanta sporita la executarea interogarilor SELECT din Lucrarea practica 4. Rezultatele optimizarii sa fie analizate in baza planurilor de executie, pana la si dupa crearea indecsilor. Indecsii nou-creati sa fie plasati fizic in grupul de fisiere userdatafgroupl (Crearea si intrefinerea bazei de date - sectiunea 2.2.2)
 
+### Example 1:
 ```SQL
-
+SELECT *
+INTO studenti_reusita_test
+FROM studenti_reusita
 ```
-![alt text]()
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_21_26_32.png)
+
+
+```SQL
+CHECKPOINT;
+GO
+DBCC DROPCLEANBUFFERS;
+DBCC FREESYSTEMCACHE('ALL');
+GO
+
+SET STATISTICS IO ON;
+UPDATE studenti_reusita
+set Nota = Nota + 1
+where Id_Student = ANY (select Sef_grupa from grupe)
+and Nota != 10
+
+select  Sef_grupa, Nota, Tip_Evaluare , Id_Disciplina
+from grupe	,	studenti_reusita
+where grupe.Id_Grupa = studenti_reusita.Id_Grupa
+SET STATISTICS IO OFF;
+```
+
+Before adding index :
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_21_13_27.png)
+
+After adding index:
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_21_18_38.png)
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_23_07_21.png)
+
+### Example 2:
+Before indexing:
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_22_13_08.png)
+ 
+ With NONCLUSTERED INDEX
+
+```SQL
+create NONCLUSTERED INDEX [IX_Test]
+     ON orarul_test (Id_Disciplina, Id_Profesor, Id_Grupa)
+	 on userdatafgroup01
+Insert orarul_test (Id_Disciplina , Id_Profesor, Zi, Ora, Auditoriu)
+       values ( 107, 101, 'Lu','08:00', 202 )
+Insert orarul_test (Id_Disciplina , Id_Profesor, Zi, Ora, Auditoriu)
+       values ( 108, 101, 'Lu','11:30', 501 )
+Insert orarul_test (Id_Disciplina , Id_Profesor, Zi, Ora, Auditoriu)
+       values ( 109, 117, 'Lu','13:00', 501 )
+
+INSERT INTO orarul_test (Id_Disciplina, Id_Profesor, Id_Grupa, Zi, Ora)
+values ((select Id_Disciplina from discipline where Disciplina = 'Structuri de date si algoritmi'),
+		(select Id_Profesor from profesori where Nume_Profesor = 'Bivol' and Prenume_Profesor = 'Ion'),
+		(select Id_Grupa from grupe where Cod_Grupa = 'INF171'), 'Lu', '08:00')
+
+INSERT INTO orarul_test(Id_Disciplina, Id_Profesor, Id_Grupa, Zi, Ora)
+values ((select Id_Disciplina from discipline where Disciplina = 'Programe aplicative'),
+		(select Id_Profesor from profesori where Nume_Profesor = 'Mircea' and Prenume_Profesor = 'Sorin'),
+		(select Id_Grupa from grupe where Cod_Grupa = 'INF171'), 'Lu', '11:30')
+
+INSERT INTO orarul_test (Id_Disciplina, Id_Profesor, Id_Grupa, Zi, Ora)
+values ((select Id_Disciplina from discipline where Disciplina = 'Baze de date'),
+		(select Id_Profesor from profesori where Nume_Profesor = 'Micu' and Prenume_Profesor = 'Elena'),
+		(select Id_Grupa from grupe where Cod_Grupa = 'INF171'), 'Lu', '13:00')
+```
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_22_28_27.png)
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_22_32_02.png)
+
+With Columnstore index :
+```SQL
+create NONCLUSTERED COLUMNSTORE INDEX [IX_Test_2]
+     ON orarul_test (Id_Disciplina, Id_Profesor, Id_Grupa)
+	 on userdatafgroup01
+
+Insert orarul_test (Id_Disciplina , Id_Profesor, Zi, Ora, Auditoriu)
+       values ( 107, 101, 'Lu','08:00', 202 )
+Insert orarul_test (Id_Disciplina , Id_Profesor, Zi, Ora, Auditoriu)
+       values ( 108, 101, 'Lu','11:30', 501 )
+Insert orarul_test (Id_Disciplina , Id_Profesor, Zi, Ora, Auditoriu)
+       values ( 109, 117, 'Lu','13:00', 501 )
+
+INSERT INTO orarul_test (Id_Disciplina, Id_Profesor, Id_Grupa, Zi, Ora)
+values ((select Id_Disciplina from discipline where Disciplina = 'Structuri de date si algoritmi'),
+		(select Id_Profesor from profesori where Nume_Profesor = 'Bivol' and Prenume_Profesor = 'Ion'),
+		(select Id_Grupa from grupe where Cod_Grupa = 'INF171'), 'Lu', '08:00')
+
+INSERT INTO orarul_test(Id_Disciplina, Id_Profesor, Id_Grupa, Zi, Ora)
+values ((select Id_Disciplina from discipline where Disciplina = 'Programe aplicative'),
+		(select Id_Profesor from profesori where Nume_Profesor = 'Mircea' and Prenume_Profesor = 'Sorin'),
+		(select Id_Grupa from grupe where Cod_Grupa = 'INF171'), 'Lu', '11:30')
+
+INSERT INTO orarul_test (Id_Disciplina, Id_Profesor, Id_Grupa, Zi, Ora)
+values ((select Id_Disciplina from discipline where Disciplina = 'Baze de date'),
+		(select Id_Profesor from profesori where Nume_Profesor = 'Micu' and Prenume_Profesor = 'Elena'),
+		(select Id_Grupa from grupe where Cod_Grupa = 'INF171'), 'Lu', '13:00')	 
+		
+```
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_22_34_34.png)
