@@ -113,7 +113,7 @@ c) Să se insereze toate datele din tabelul profesori în tabelul profesori_new.
 CREATE TABLE profesori_new
 (Id_Profesor int NOT NULL
  ,Nume_Profesor char(255)
- ,[Prenume_Profesor] char(255)
+ ,Prenume_Profesor char(255)
  ,Localitate char (60) DEFAULT ('mun. Chisinau')
  ,Adresa_1 char (60)
  ,Adresa_2 char (60),
@@ -142,9 +142,9 @@ SET Localitate = case when CHARINDEX(', s.',Localitate) >0
 				end
 UPDATE profesori_new
 SET Adresa_1 = case when CHARINDEX('str.', Adresa_1)>0
-					then SUBSTRING(Adresa_1,CHARINDEX('str',Adresa_1)-1, PATINDEX('%, [0-9]%',Adresa_1)- CHARINDEX('str.',Adresa_1))
+					then SUBSTRING(Adresa_1,CHARINDEX('str',Adresa_1), PATINDEX('%, [0-9]%',Adresa_1)- CHARINDEX('str.',Adresa_1))
 			        when CHARINDEX('bd.',Adresa_1)>0
-					then SUBSTRING(Adresa_1,CHARINDEX('bd',Adresa_1)-1, PATINDEX('%, [0-9]%',Adresa_1) -  CHARINDEX('str.',Adresa_1))
+					then SUBSTRING(Adresa_1,CHARINDEX('bd',Adresa_1), PATINDEX('%, [0-9]%',Adresa_1) -  CHARINDEX('bd.',Adresa_1))
 			   end
 
 UPDATE profesori_new
@@ -215,3 +215,8 @@ values ((select Id_Disciplina from discipline where Disciplina = 'Baze de date')
 
 ### Task 8
 Sa se scrie interogarile de creare a indecsilor asupra tabelelor din baza de date universitatea pentru a asigura o performanta sporita la executarea interogarilor SELECT din Lucrarea practica 4. Rezultatele optimizarii sa fie analizate in baza planurilor de executie, pana la si dupa crearea indecsilor. Indecsii nou-creati sa fie plasati fizic in grupul de fisiere userdatafgroupl (Crearea si intrefinerea bazei de date - sectiunea 2.2.2)
+
+```SQL
+
+```
+![alt text]()
