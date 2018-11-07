@@ -109,3 +109,135 @@ c) Să se insereze toate datele din tabelul profesori în tabelul profesori_new.
 
 În coloana Localitate să fie inserata doar informatia despre denumirea localității din coloana-sursă Adresa_Postala_Profesor. În coloana Adresa_l, doar denumirea străzii. În coloana Adresa_2, să se păstreze numărul casei și (posibil) a apartamentului.
 
+```SQL
+CREATE FUNCTION INSTR2(@str VARCHAR(8000), @substr VARCHAR(255), @start INT, @occurrence INT)
+  RETURNS INT
+  AS
+  BEGIN
+	DECLARE @found INT = @occurrence,
+			@pos INT = @start;
+ 
+	WHILE 1=1 
+	BEGIN
+		-- Find the next occurrence
+		SET @pos = CHARINDEX(@substr, @str, @pos);
+ 
+		-- Nothing found
+		IF @pos IS NULL OR @pos = 0
+			RETURN @pos;
+ 
+		-- The required occurrence found
+		IF @found = 1
+			BREAK;
+ 
+		-- Prepare to find another one occurrence
+		SET @found = @found - 1;
+		SET @pos = @pos + 1;
+	END
+ 
+	RETURN @pos;
+  END
+  GO
+
+CREATE TABLE profesori_new
+(Id_Profesor int NOT NULL
+ ,Nume_Profesor char(255)
+ ,Prenume_Profesor char(255)
+ ,Localitate char (255) DEFAULT('mun. Chisinau')
+ ,Adresa_1 char (60)
+ ,Adresa_2 char (60),
+  CONSTRAINT [PK_profesori_new] PRIMARY KEY CLUSTERED 
+(	Id_Profesor )) ON [PRIMARY]
+
+INSERT INTO profesori_new(Id_Profesor, Nume_Profesor, Prenume_Profesor, Localitate, Adresa_1, Adresa_2)
+ SELECT Id_Profesor,
+        Nume_Profesor,
+	Prenume_Profesor,
+	CASE 
+		WHEN LEN(Adresa_Postala_Profesor)-LEN(REPLACE(Adresa_Postala_Profesor, ',', ''))=3 
+		THEN  Substring(Adresa_Postala_Profesor,1, dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 2)-1)
+		WHEN LEN(Adresa_Postala_Profesor)-LEN(REPLACE(Adresa_Postala_Profesor, ',', '')) =2 
+		THEN Substring(Adresa_Postala_Profesor,1, charindex(',',Adresa_Postala_Profesor)-1)
+		ELSE Adresa_Postala_Profesor
+		END as  localitate,
+	CASE 
+		WHEN LEN(Adresa_Postala_Profesor)-LEN(REPLACE(Adresa_Postala_Profesor, ',', ''))=3 
+		THEN  Substring(Adresa_Postala_Profesor,dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 2)+1,
+		(dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 3))-(dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 2))-1)
+		WHEN LEN(Adresa_Postala_Profesor)-LEN(REPLACE(Adresa_Postala_Profesor, ',', '')) =2 
+		THEN Substring(Adresa_Postala_Profesor,dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 1)+1,
+		(dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 2))-(dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 1))-1)
+		ELSE NULL
+		END as  Adresa_1,
+	CASE 
+		WHEN LEN(Adresa_Postala_Profesor)-LEN(REPLACE(Adresa_Postala_Profesor, ',', ''))=3 
+		THEN  Substring(Adresa_Postala_Profesor,dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 3)+1, 5)
+		WHEN LEN(Adresa_Postala_Profesor)-LEN(REPLACE(Adresa_Postala_Profesor, ',', '')) =2 
+		THEN Substring(Adresa_Postala_Profesor,dbo.INSTR2(Adresa_Postala_Profesor, ',', 1, 2)+1, 5)
+		ELSE NULL
+		END as  Adresa_2
+	FROM profesori;
+		
+select * from profesori_new
+
+```
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_00_15_55.png)
+
+### Task 6
+Să se insereze datele in tabelul orarul pentru Grupa= 'CIBJ 71' (Id_ Grupa= 1) pentru ziua de luni. Toate lectiile vor avea loc în blocul de studii 'B'. Mai jos, sunt prezentate detaliile de inserare:
+
+(ld_Disciplina = 107, Id_Profesor= 101, Ora ='08:00', Auditoriu = 202);
+
+(Id_Disciplina = 108, Id_Profesor= 101, Ora ='11:30', Auditoriu = 501);
+
+(ld_Disciplina = 119, Id_Profesor= 117, Ora ='13:00', Auditoriu = 501);
+
+```SQL
+create table orarul ( Id_Disciplina int,
+					  Id_Profesor int,
+					  Id_Grupa smallint default(1),
+					  Zi char(2),
+					  Ora Time,
+					  Auditoriu int,
+					  Bloc char(1) default('B'),
+					  PRIMARY KEY (Id_Grupa, Zi, Ora, Auditoriu)
+					  )
+Insert orarul (Id_Disciplina , Id_Profesor, Zi, Ora, Auditoriu)
+       values ( 107, 101, 'Lu','08:00', 202 )
+Insert orarul (Id_Disciplina , Id_Profesor, Zi, Ora, Auditoriu)
+       values ( 108, 101, 'Lu','11:30', 501 )
+Insert orarul (Id_Disciplina , Id_Profesor, Zi, Ora, Auditoriu)
+       values ( 109, 117, 'Lu','13:00', 501 )
+
+	   select * from orarul
+```
+
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_00_55_05.png)
+
+### Task 7
+Sa se scrie expresiile T-SQL necesare pentru a popula tabelul orarul pentru grupa INF171 , ziua de luni.
+Datele necesare pentru inserare trebuie sa fie colectate cu ajutorul instructiunii/instructiunilor SELECT si introduse in tabelul-destinatie, stiind ca: <br/>lectie #1 (Ora ='08:00', Disciplina = 'Structuri de date si algoritmi', Profesor ='Bivol Ion')<br/> lectie #2 (Ora ='11 :30', Disciplina = 'Programe aplicative', Profesor ='Mircea Sorin')<br/> lectie #3 (Ora ='13:00', Disciplina ='Baze de date', Profesor = 'Micu Elena')
+
+```SQL
+INSERT INTO orarul (Id_Disciplina, Id_Profesor, Id_Grupa, Zi, Ora)
+values ((select Id_Disciplina from discipline where Disciplina = 'Structuri de date si algoritmi'),
+		(select Id_Profesor from profesori where Nume_Profesor = 'Bivol' and Prenume_Profesor = 'Ion'),
+		(select Id_Grupa from grupe where Cod_Grupa = 'INF171'), 'Lu', '08:00')
+
+INSERT INTO orarul (Id_Disciplina, Id_Profesor, Id_Grupa, Zi, Ora)
+values ((select Id_Disciplina from discipline where Disciplina = 'Programe aplicative'),
+		(select Id_Profesor from profesori where Nume_Profesor = 'Mircea' and Prenume_Profesor = 'Sorin'),
+		(select Id_Grupa from grupe where Cod_Grupa = 'INF171'), 'Lu', '11:30')
+
+INSERT INTO orarul (Id_Disciplina, Id_Profesor, Id_Grupa, Zi, Ora)
+values ((select Id_Disciplina from discipline where Disciplina = 'Baze de date'),
+		(select Id_Profesor from profesori where Nume_Profesor = 'Micu' and Prenume_Profesor = 'Elena'),
+		(select Id_Grupa from grupe where Cod_Grupa = 'INF171'), 'Lu', '13:00')
+
+		select * from orarul
+```
+
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/LAB6/images/VirtualBox_Alina_07_11_2018_01_15_27.png)
+
+### Task 8
+Sa se scrie interogarile de creare a indecsilor asupra tabelelor din baza de date universitatea pentru a asigura o performanta sporita la executarea interogarilor SELECT din Lucrarea practica 4. Rezultatele optimizarii sa fie analizate in baza planurilor de executie, pana la si dupa crearea indecsilor. Indecsii nou-creati sa fie plasati fizic in grupul de fisiere userdatafgroupl (Crearea si intrefinerea bazei de date - sectiunea 2.2.2)
