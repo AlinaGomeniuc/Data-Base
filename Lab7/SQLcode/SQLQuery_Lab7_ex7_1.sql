@@ -1,8 +1,12 @@
-SELECT distinct studenti.studenti.Nume_Student , studenti.studenti.Prenume_Student 
-FROM studenti.studenti, plan_studii.discipline , studenti.studenti_reusita
-Where studenti.studenti.Id_Student = studenti.studenti_reusita.Id_Student
-and plan_studii.discipline.Id_Disciplina = studenti.studenti_reusita.Id_Disciplina
-and studenti.studenti_reusita.Tip_Evaluare = 'examen' 
-and year(studenti.studenti_reusita.Data_Evaluare) = 2018 
-and plan_studii.discipline.Disciplina = 'Baze de date'
-and studenti.studenti_reusita.Nota between  4 and 8
+CREATE SYNONYM studentiS FOR studenti.studenti
+CREATE SYNONYM reusitaS FOR studenti.studenti_reusita
+CREATE SYNONYM disciplineS FOR plan_studii.discipline
+
+SELECT distinct studentiS.Nume_Student , studentiS.Prenume_Student 
+FROM studentiS, disciplineS , reusitaS
+Where studentiS.Id_Student = reusitaS.Id_Student
+and disciplineS.Id_Disciplina = reusitaS.Id_Disciplina
+and reusitaS.Tip_Evaluare = 'examen' 
+and year(reusitaS.Data_Evaluare) = 2018 
+and disciplineS.Disciplina = 'Baze de date'
+and reusitaS.Nota between  4 and 8
