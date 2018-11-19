@@ -1,4 +1,4 @@
-ALTER VIEW WITH SCHEMABINDING AS
+ALTER VIEW View_ex1_Lab8 WITH SCHEMABINDING AS
 SELECT distinct studentiS.Nume_Student , studentiS.Prenume_Student 
 FROM studentiS, disciplineS , reusitaS
 Where studentiS.Id_Student = reusitaS.Id_Student
