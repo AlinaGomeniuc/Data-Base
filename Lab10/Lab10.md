@@ -30,6 +30,26 @@ DUPA<br>
 
 ### 2. Sa se creeze declansatorul, care ar asigura popularea corecta (consecutiva) a tabelelor studenti si studenti_reusita,si ar permite evitarea erorilor la nivelul cheilor externe.
 
+```SQL
+CREATE TRIGGER Lab10_ex2 ON studenti.studenti_reusita
+INSTEAD OF INSERT
+AS SET NOCOUNT ON
+   
+  INSERT INTO studenti.studenti_reusita 
+  SELECT * FROM inserted
+  WHERE Id_Student in (SELECT Id_Student FROM studenti.studenti)
+  GO
+
+  INSERT INTO reusitaS values (200, 101, 101, 1, 'Examen', null, null)
+
+ -- INSERT INTO studentiS values (200,'AAA', 'BBB', '1999-11-18', null)
+
+ -- delete from studentiS where Id_Student = 200
+  select * from studentiS where Id_Student= 200
+  select * from reusitaS where Id_Student = 200
+  ```
+  ![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab10/images/VirtualBox_Alina_05_12_2018_00_09_32.png)
+
 ### 3. Sa se creeze un declansator, care ar interzice micsorarea notelor in tabelul studenti_reusita si modificarea valorilor campului Data_Evaluare, unde valorile acestui camp sunt nenule. Declansatorul trebuie sa se lanseze, numai daca sunt afectate datele studentilor din grupa ,,CIB 171 ". Se va afisa un mesaj de avertizare in cazul tentativei de a incalca constrangerea.
 
 ### 4. Sa se creeze un declansator DDL care ar interzice modificarea coloanei ld_Disciplina in tabelele bazei de date universitatea cu afisarea mesajului respectiv.
