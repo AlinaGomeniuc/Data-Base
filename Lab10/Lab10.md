@@ -21,11 +21,12 @@ WHERE deleted.Id_Disciplina = disciplineS.Id_Disciplina
 AND inserted.Id_Grupa = grupe.Id_Grupa
 GO
 ```
-PANA LA MODIFICARI
+PANA LA MODIFICARI <br>
 ![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab10/images/VirtualBox_Alina_04_12_2018_18_08_37.png)
+
 ![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab10/images/VirtualBox_Alina_04_12_2018_18_09_31.png)
 
-DUPA
+DUPA<br>
 ![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab10/images/VirtualBox_Alina_04_12_2018_18_10_02.png)
 
 ### 2. Sa se creeze declansatorul, care ar asigura popularea corecta (consecutiva) a tabelelor studenti si studenti_reusita,
