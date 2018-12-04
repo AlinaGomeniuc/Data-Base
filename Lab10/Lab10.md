@@ -52,6 +52,41 @@ AS SET NOCOUNT ON
 
 ### 3. Sa se creeze un declansator, care ar interzice micsorarea notelor in tabelul studenti_reusita si modificarea valorilor campului Data_Evaluare, unde valorile acestui camp sunt nenule. Declansatorul trebuie sa se lanseze, numai daca sunt afectate datele studentilor din grupa ,,CIB 171 ". Se va afisa un mesaj de avertizare in cazul tentativei de a incalca constrangerea.
 
+```SQL
+IF OBJECT_ID('Lab10_ex3', 'TR') is not null
+   DROP TRIGGER Lab10_ex3
+   GO
+CREATE TRIGGER Lab10_ex3 ON studenti.studenti_reusita
+AFTER UPDATE
+AS
+SET NOCOUNT ON
+IF UPDATE (Nota)
+DECLARE @ID_GRUPA INT = (SELECT Id_Grupa  FROM grupe WHERE Cod_Grupa = 'CIB171')
+DECLARE @count int = (SELECT count(*) FROM deleted , inserted 
+			where deleted.Id_Disciplina = inserted.Id_Disciplina and deleted.Id_Grupa = inserted.Id_Grupa 
+			and deleted.Id_Profesor = inserted.Id_Profesor and deleted.Tip_Evaluare = inserted.Tip_Evaluare 
+			and deleted.Id_Student = inserted.Id_Student
+			and inserted.Nota < deleted.Nota 
+			and inserted.Id_Grupa = @ID_GRUPA)
+	
+BEGIN
+IF (@count > 0 )
+PRINT ('Nu se perminte micsorarea notelor pentru grupa CIB 171')
+ROLLBACK TRANSACTION
+end
+
+IF UPDATE(Data_evaluare)
+		SET @count = (SELECT count(*) FROM deleted WHERE Data_Evaluare is not null and Id_Grupa = @ID_GRUPA)
+		IF @count > 0
+		BEGIN
+			PRINT ('Nu se permite modificarea campului Tip_Evaluare')
+			ROLLBACK TRANSACTION
+		END
+GO
+```
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab10/images/VirtualBox_Alina_05_12_2018_01_10_48.png)
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab10/images/VirtualBox_Alina_05_12_2018_01_26_05.png)
+
 ### 4. Sa se creeze un declansator DDL care ar interzice modificarea coloanei ld_Disciplina in tabelele bazei de date universitatea cu afisarea mesajului respectiv.
 
 ### 5. Sa se creeze un declansator DDL care ar interzice modificarea schemei bazei de date in afara orelor de lucru.
