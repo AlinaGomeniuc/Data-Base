@@ -88,7 +88,103 @@ GO
 ![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab10/images/VirtualBox_Alina_05_12_2018_01_26_05.png)
 
 ### 4. Sa se creeze un declansator DDL care ar interzice modificarea coloanei ld_Disciplina in tabelele bazei de date universitatea cu afisarea mesajului respectiv.
+```SQL
+CREATE TRIGGER Lab10_ex4 on database
+FOR Alter_Table
+AS 
+SET NOCOUNT ON
+DECLARE @NUME_STUDENT varchar(50)
+SELECT @NUME_STUDENT=EVENTDATA().value('(/EVENT_INSTANCE/AlterTableActionList/*/Columns/Name)[1]', 'nvarchar(100)') 
+IF @NUME_STUDENT='Nume_Student'
+BEGIN 
+PRINT ('Nu poate fi modificata coloana Id_Student')
+ROLLBACK;
+END
+
+ALTER TABLE studenti.studenti ALTER COLUMN Id_Student varchar(100)
+```
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab10/images/VirtualBox_Alina_06_12_2018_22_50_19.png)
+
+Pentru Nume_Student
+```SQL
+CREATE TRIGGER Lab10_ex4 on database
+FOR Alter_Table
+AS 
+SET NOCOUNT ON
+DECLARE @NUME_STUDENT varchar(50)
+SELECT @NUME_STUDENT=EVENTDATA().value('(/EVENT_INSTANCE/AlterTableActionList/*/Columns/Name)[1]', 'nvarchar(100)') 
+IF @NUME_STUDENT='Nume_Student'
+BEGIN 
+PRINT ('Nu poate fi modificata coloana Nume_Student')
+ROLLBACK;
+END
+
+ALTER TABLE studenti.studenti ALTER COLUMN Nume_Student varchar(100)
+```
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab10/images/VirtualBox_Alina_06_12_2018_23_07_34.png)
+
 
 ### 5. Sa se creeze un declansator DDL care ar interzice modificarea schemei bazei de date in afara orelor de lucru.
+```SQL
+DROP TRIGGER IF EXISTS Lab10_ex5
+GO
+CREATE TRIGGER Lab10_ex5 
+ON DATABASE
+FOR ALTER_TABLE
+AS
+SET NOCOUNT ON
+DECLARE @TimpulCurent TIME
+DECLARE @Inceput TIME
+DECLARE @Sfarsit TIME
+SELECT @TimpulCurent = CONVERT(Time, GETDATE())
+SELECT @Inceput = '8:00:00'
+SELECT @Sfarsit = '17:00:00'
+
+IF (@TimpulCurent < @Inceput) OR (@TimpulCurent > @Sfarsit)
+BEGIN	
+PRINT 'Baza de date nu poate fi modificata inafara orelor de lucru. Ora curenta: ' + cast(@TimpulCurent as VARCHAR(20))
+ROLLBACK
+END
+
+GO
+
+alter table studenti.studenti alter column Nume_Student varchar(49);
+```
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab10/images/VirtualBox_Alina_06_12_2018_21_13_29.png)
+
 
 ### 6. Sa se creeze un declansator DDL care, la modificarea proprietatilor coloanei ld_Profesor dintr-un tabel, ar face schimbari asemanatoare in mod automat in restul tabelelor.
+```SQL
+CREATE TRIGGER Lab10_ex6
+ON DATABASE
+FOR ALTER_TABLE
+AS
+SET NOCOUNT ON
+DECLARE @COMANDA varchar(500)
+DECLARE @ID_PROFESOR varchar (20)
+DECLARE @TABELUL varchar (50)
+DECLARE @COMANDA_NOUA varchar(500)
+
+SELECT @ID_PROFESOR = EVENTDATA().value('(/EVENT_INSTANCE/AlterTableActionList/*/Columns/Name)[1]', 'nvarchar(max)')
+IF @ID_PROFESOR = 'Id_Profesor'
+BEGIN
+SELECT @COMANDA = EVENTDATA().value ('(/EVENT_INSTANCE/TSQLCommand/CommandText)[1]', 'nvarchar(max)')
+SELECT @TABELUL = EVENTDATA().value ('(/EVENT_INSTANCE/ObjectName)[1]','nvarchar(max)')
+
+SELECT @COMANDA_NOUA = REPLACE(@ID_PROFESOR, @TABELUL, 'studenti.studenti_reusita');
+EXECUTE (@COMANDA_NOUA)
+
+
+SELECT @COMANDA_NOUA = REPLACE(@ID_PROFESOR, @TABELUL, 'cadre_didactice.profesori');
+EXECUTE (@COMANDA_NOUA)
+
+
+SELECT @COMANDA_NOUA = REPLACE(@ID_PROFESOR, @TABELUL, 'plan_studii.orarul');
+EXECUTE (@COMANDA_NOUA)
+
+PRINT 'Datele au fost modificate cu succes'
+END
+
+ALTER TABLE cadre_didactice.profesori ALTER COLUMN Id_Profesor SMALLINT
+```
+![alt text](https://github.com/AlinaGomeniuc/Data-Base/blob/master/Lab10/images/VirtualBox_Alina_07_12_2018_22_12_58.png)
