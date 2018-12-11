@@ -40,11 +40,10 @@ AS SET NOCOUNT ON
   WHERE Id_Student in (SELECT Id_Student FROM studenti.studenti)
   GO
 
+  INSERT INTO studentiS values (200,'AAA', 'BBB', '1999-11-18', null)
   INSERT INTO reusitaS values (200, 101, 101, 1, 'Examen', null, null)
 
- -- INSERT INTO studentiS values (200,'AAA', 'BBB', '1999-11-18', null)
-
- -- delete from studentiS where Id_Student = 200
+ 
   select * from studentiS where Id_Student= 200
   select * from reusitaS where Id_Student = 200
   ```
@@ -93,9 +92,9 @@ CREATE TRIGGER Lab10_ex4 on database
 FOR Alter_Table
 AS 
 SET NOCOUNT ON
-DECLARE @NUME_STUDENT varchar(50)
+DECLARE @ID_STUDENT varchar(50)
 SELECT @NUME_STUDENT=EVENTDATA().value('(/EVENT_INSTANCE/AlterTableActionList/*/Columns/Name)[1]', 'nvarchar(100)') 
-IF @NUME_STUDENT='Nume_Student'
+IF @ID_STUDENT='Id_Student'
 BEGIN 
 PRINT ('Nu poate fi modificata coloana Id_Student')
 ROLLBACK;
